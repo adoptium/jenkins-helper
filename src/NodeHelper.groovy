@@ -87,7 +87,6 @@ class  NodeHelper {
             newSlave.setLabelString(newNodeLabelString);
 
             (Jenkins.getInstance()).addNode(newSlave);
-
             (Jenkins.getInstance().getComputer(newNodeName)).connect(false);
 
             ret = newNodeName;
@@ -182,12 +181,7 @@ class  NodeHelper {
         Computer computer = getComputer(computerName);
         if (computer != null) {
             ret = constructOsLabel(computer.getName());
-            if (getOsArch(computer.getName()).contains("ppc")
-                && getOsKernelInfo(computer.getName()).get(0).equalsIgnoreCase("linux")) {
-                /* Only care about Endianness if it's plinux
-                 * because ppc is the only one that supports
-                 * both big and little endian
-                 */
+            if (isEndianLabelNeeded(computer)) {
                 ret += " " + constructEndianLabel(computer.getName());
             }
             ret += " " + constructArchLabel(computer.getName());
@@ -199,6 +193,21 @@ class  NodeHelper {
             }
         }
 
+        return ret;
+    }
+
+    private boolean isEndianLabelNeeded(Computer computer) {
+        boolean ret = false;
+        if (computer != null) {
+            if (getOsArch(computer.getName()).contains("ppc")
+                    && getOsKernelInfo(computer.getName()).get(0).equalsIgnoreCase("linux")) {
+                /* Only care about Endianness if it's plinux
+                 * because ppc is the only one that supports
+                 * both big and little endian
+                 */
+                ret = true;
+            }
+        }
         return ret;
     }
 
@@ -353,7 +362,7 @@ class  NodeHelper {
 
     
     public Tuple getOsInfo(String computerName) {
-        Tuple ret;
+        Tuple ret = new Tuple("getOsInfo:COMPUTER_NOT_FOUND", "getOsInfo:COMPUTER_NOT_FOUND");
 
         Computer computer = getComputer(computerName);
         if (computer != null) {
@@ -368,12 +377,12 @@ class  NodeHelper {
                 case "aix":
                     ret = getAIXOsInfo(computer);
                     break;
-                case "zos":
+                // case "zos":
                     // ret = // TODO: find the command
                     // break; 
                 case "mac":
-                    // ret = getMacOsInfo(computer);
-                    // break;
+                    ret = getMacOsInfo(computer);
+                    break;
                 default:
                     ret = new Tuple("NOT_IMPLEMENTED_YET","NOT_IMPLEMENTED_YET");
                     break;
@@ -384,86 +393,81 @@ class  NodeHelper {
     }
 
     private Tuple getWindowsOsInfo(Computer computer) {
-        String osName = "getWindowsOsInfo:COMPUTER_NOT_FOUND";
-        String osVersion = "getWindowsOsInfo:COMPUTER_NOT_FOUND";
+        String retOsName = "getWindowsOsInfo:COMPUTER_NOT_FOUND";
+        String retOsVersion = "getWindowsOsInfo:COMPUTER_NOT_FOUND";
 
         if (computer != null) {
-            osName = "getWindowsOsInfo:UNSUCCESSFUL_EXECUTION";
-            osVersion = "getWindowsOsInfo:UNSUCCESSFUL_EXECUTION";
-
-            int index = 0;
+            retOsName = "getWindowsOsInfo:UNSUCCESSFUL_EXECUTION";
+            retOsVersion = "getWindowsOsInfo:UNSUCCESSFUL_EXECUTION";
 
             String cmdResult = execGroovy("wmic os get Caption /value", computer);
 
             if (!cmdResult.equals("error")) {
-                osName = "WIN";
+                retOsName = "WIN";
                 String osString = cmdResult.split("=")[1].replace("Microsoft Windows ", "");
-                osVersion = osString.replace("Server", "").trim().split(" ")[0];
+                retOsVersion = osString.replace("Server", "").trim().split(" ")[0];
             }
 
         }
 
-        return new Tuple(osName,osVersion);
+        return new Tuple(retOsName,retOsVersion);
     }
 
     private Tuple getAIXOsInfo(Computer computer) {
-        String osName = "getAIXOsInfo:COMPUTER_NOT_FOUND";
-        String osVersion = "getAIXOsInfo:COMPUTER_NOT_FOUND";
+        String retOsName = "getAIXOsInfo:COMPUTER_NOT_FOUND";
+        String retOsVersion = "getAIXOsInfo:COMPUTER_NOT_FOUND";
 
         if (computer != null) {
-            osName = "getAIXOsInfo:UNSUCCESSFUL_EXECUTION";
-            osVersion = "getAIXOsInfo:UNSUCCESSFUL_EXECUTION";
-
-            int index = 0;
+            retOsName = "getAIXOsInfo:UNSUCCESSFUL_EXECUTION";
+            retOsVersion = "getAIXOsInfo:UNSUCCESSFUL_EXECUTION";
 
             String cmdResult = execGroovy("oslevel -s", computer);
 
             if (!cmdResult.equals("error")) {
-                osName = "AIX";
-                osVersion = cmdResult.split("-")[0];
-                /* There is 3 because minimum length after the main version is 3,
-                 * based on a less than 9 major version. This way, if the major
-                 * version goes to 10 this will still work.
+                retOsName = "AIX";
+                String rawretOsVersion = cmdResult.split("-")[0];
+                /* 3 was hardcoded because that is the minimum lenght of stuff
+                 * before the major version that needs to be removed. This minimum
+                 * length approach will also work for double digit major versions.
                  */
-                osVersion = osVersion.substring(0,osVersion.length() - 3) + "." + osVersion.charAt(osVersion.length() - 3);
+                retOsVersion = rawretOsVersion.substring(0,rawretOsVersion.length() - 3);
+                retOsVersion += "." + rawretOsVersion.charAt(rawretOsVersion.length() - 3);
             }
         }
 
-        return new Tuple(osName, osVersion);
+        return new Tuple(retOsName, retOsVersion);
     }
 
     private Tuple getMacOsInfo(Computer computer) {
-        String osName = "getMacOsInfo:COMPUTER_NOT_FOUND";
-        String osVersion = "getMacOsInfo:COMPUTER_NOT_FOUND";
+        String retOsName = "getMacOsInfo:COMPUTER_NOT_FOUND";
+        String retOsVersion = "getMacOsInfo:COMPUTER_NOT_FOUND";
 
         if (computer != null) {
-            osName = "getMacOsInfo:UNSUCCESSFUL_EXECUTION";
-            osVersion = "getMacOsInfo:UNSUCCESSFUL_EXECUTION";
-
-            int index = 0;
+            retOsName = "getMacOsInfo:UNSUCCESSFUL_EXECUTION";
+            retOsVersion = "getMacOsInfo:UNSUCCESSFUL_EXECUTION";
 
             String cmdResult = execGroovy("sw_vers", computer);
 
             if (!cmdResult.equals("error")) {
-                osName = "osx";
+                retOsName = "osx";
 
+                String versionLine;
                 for(String line : cmdResult.split("\\n")) {
                     if (line.contains("ProductVersion")) {
-                        // TODO: Finish implementation
-                        line = line.split(": ")
-                        osVersion = "10."+line[1].split(".")[1];
+                        versionLine = line.substring(line.indexOf(":") + 1).trim();
+                        retOsVersion = versionLine.substring(0,versionLine.lastIndexOf("."));
                     }
                 }
             }
         }
 
-        return new Tuple(osName, osVersion);
+        return new Tuple(retOsName, retOsVersion);
     }
 
 
     private Tuple getLinuxOsInfo(Computer computer) {
-        String osName = "getLinuxOsInfo:COMPUTER_NOT_FOUND";
-        String osVersion = "getLinuxOsInfo:COMPUTER_NOT_FOUND";
+        String retOsName = "getLinuxOsInfo:COMPUTER_NOT_FOUND";
+        String retOsVersion = "getLinuxOsInfo:COMPUTER_NOT_FOUND";
 
         if (computer != null) {
             /* Here we iterate over a list of commands
@@ -472,8 +476,8 @@ class  NodeHelper {
              * corresponds to the parse method that
              * needs to be called
              */
-            osName = "UNSUCCESSFUL_EXECUTION";
-            osVersion = "UNSUCCESSFUL_EXECUTION";
+            retOsName = "UNSUCCESSFUL_EXECUTION";
+            retOsVersion = "UNSUCCESSFUL_EXECUTION";
             def osInfo;
 
             int index = 0;
@@ -491,8 +495,8 @@ class  NodeHelper {
                     switch(index){
                         case 0:
                             osInfo = parseOsInfoString(cmdResult);
-                            osName = osInfo.get(0);
-                            osVersion = osInfo.get(1);
+                            retOsName = osInfo.get(0);
+                            retOsVersion = osInfo.get(1);
                             break;
                         case 1:
                         case 2:
@@ -509,20 +513,20 @@ class  NodeHelper {
                 }
 
                 if (!osInfo.equals(null)) {
-                    osName = osInfo.get(0);
-                    osVersion = osInfo.get(1);
+                    retOsName = osInfo.get(0);
+                    retOsVersion = osInfo.get(1);
                 }
 
                 index++;
             }
         }
 
-        return new Tuple(osName,osVersion);
+        return new Tuple(retOsName,retOsVersion);
     }
 
     private Tuple parseSuseOsInfoString(String rawValue) {
-        String osName = "parseSuseOsInfoString:INVALID_INPUT ${rawValue}";
-        String osVersion = "parseSuseOsInfoString:INVALID_INPUT ${rawValue}";
+        String retOsName = "parseSuseOsInfoString:INVALID_INPUT ${rawValue}";
+        String retOsVersion = "parseSuseOsInfoString:INVALID_INPUT ${rawValue}";
 
         /* Sample raw value
          * NAME="SLES"
@@ -542,32 +546,32 @@ class  NodeHelper {
             String tmpLine;
 
             while ((index) < rawValueArray.length 
-                    && (osName.contains("parseSuseOsInfoString:INVALID_INPUT") 
-                            || osVersion.contains("parseSuseOsInfoString:INVALID_INPUT"))) {
+                    && (retOsName.contains("parseSuseOsInfoString:INVALID_INPUT") 
+                            || retOsVersion.contains("parseSuseOsInfoString:INVALID_INPUT"))) {
 
                 if (rawValueArray[index].matches("^ID=.*")) {
                     tmpLine = rawValueArray[index].replace("\"","");
-                    osName = ((tmpLine.split("="))[1]);
+                    retOsName = ((tmpLine.split("="))[1]);
                 } else if (rawValueArray[index].matches("^VERSION=.*")) {
                     
                     tmpLine = rawValueArray[index].replace("\"","");
-                    osVersion = ((tmpLine.split("="))[1]);
+                    retOsVersion = ((tmpLine.split("="))[1]);
 
-                    if (osVersion.contains(" ")) {
+                    if (retOsVersion.contains(" ")) {
                         /* This deals with a edge case when
-                         * the osVersion is "8 (something)".
+                         * the retOsVersion is "8 (something)".
                          * It works on the hope that the major
                          * version number will not be seperated
                          * by space.
                          */
-                        osVersion = osVersion.split(" ")[0];
+                        retOsVersion = retOsVersion.split(" ")[0];
                     } 
 
-                    if (osVersion.contains("-SP")) {
-                        osVersion = osVersion.substring(0,osVersion.indexOf("-SP"));
+                    if (retOsVersion.contains("-SP")) {
+                        retOsVersion = retOsVersion.substring(0,retOsVersion.indexOf("-SP"));
                     }
-                    if (osVersion.contains(".")) {
-                        osVersion = osVersion.substring(0,osVersion.indexOf("."));
+                    if (retOsVersion.contains(".")) {
+                        retOsVersion = retOsVersion.substring(0,retOsVersion.indexOf("."));
                     }
 
                 }
@@ -576,12 +580,12 @@ class  NodeHelper {
             }
         }
 
-        return new Tuple(osName,osVersion);
+        return new Tuple(retOsName,retOsVersion);
     }
 
     private Tuple parseRedHatOsInfoString(String rawValue) {
-        String osName = "parseRedHatOsInfoString:INVALID_INPUT";
-        String osVersion = "parseRedHatOsInfoString:INVALID_INPUT";
+        String retOsName = "parseRedHatOsInfoString:INVALID_INPUT";
+        String retOsVersion = "parseRedHatOsInfoString:INVALID_INPUT";
 
         /* Sample raw values
          * CentOS Linux release 7.2.1511 (Core)
@@ -594,23 +598,23 @@ class  NodeHelper {
             String[] rawValueSplit = rawValue.split("release");
 
             if (rawValueSplit[0].contains("CentOS")) {
-                osName = "cent";
+                retOsName = "cent";
             } else if (rawValueSplit[0].contains("Red")) {
-                osName = "rhel";
+                retOsName = "rhel";
             }
 
-            osVersion = rawValueSplit[1].trim();
-            if (!osVersion.equals("")) {
-                osVersion = osVersion.substring(0,osVersion.indexOf(".")); // Removes the subversion
+            retOsVersion = rawValueSplit[1].trim();
+            if (!retOsVersion.equals("")) {
+                retOsVersion = retOsVersion.substring(0,retOsVersion.indexOf(".")); // Removes the subversion
             }
         }
 
-        return new Tuple(osName,osVersion);
+        return new Tuple(retOsName,retOsVersion);
     }
 
     private Tuple parseOsInfoString(String rawValue) {
-        String osName = "parseOsInfoString:INVALID_INPUT";
-        String osVersion = "parseOsInfoString:INVALID_INPUT";
+        String retOsName = "parseOsInfoString:INVALID_INPUT";
+        String retOsVersion = "parseOsInfoString:INVALID_INPUT";
 
         /* Sample raw value
          * Distributor ID:  Raspbian
@@ -625,25 +629,25 @@ class  NodeHelper {
             String[] rawValueArray = rawValue.split("\\n");
             int index = 0;
             while ((index) < rawValueArray.length 
-                    && (osName.equals("parseOsInfoString:INVALID_INPUT") 
-                        || osVersion.equals("parseOsInfoString:INVALID_INPUT"))) {
+                    && (retOsName.equals("parseOsInfoString:INVALID_INPUT") 
+                        || retOsVersion.equals("parseOsInfoString:INVALID_INPUT"))) {
 
                 if (rawValueArray[index].matches("^Distributor ID:\\s+.*")) {
                     if (rawValueArray[index].contains("Red")) {
-                        osName = "rhel";
+                        retOsName = "rhel";
                     } else {
-                        osName = ((rawValueArray[index].split(":\\s"))[1]);
+                        retOsName = ((rawValueArray[index].split(":\\s"))[1]);
                     }
                 } else if (rawValueArray[index].matches("^Release:\\s+.*")) {
-                    osVersion = ((rawValueArray[index].split(":\\s"))[1]);
-                    osVersion = osVersion.substring(0,osVersion.indexOf(".")); // Removes the subversion
+                    retOsVersion = ((rawValueArray[index].split(":\\s"))[1]);
+                    retOsVersion = retOsVersion.substring(0,retOsVersion.indexOf(".")); // Removes the subversion
                 }
 
                 index++;
             }
         }
 
-        return new Tuple(osName,osVersion);
+        return new Tuple(retOsName,retOsVersion);
     }
 
     /**
@@ -850,37 +854,13 @@ class  NodeHelper {
         String ret = "getCpuCountFromWindows: COMPUTER_NOT_FOUND";
 
         if (computer != null) {
-            ret = -2;
-            
-            /* Below is the code with the right way to get CPU count
-             * But due to a bug in setting up the environment variables on windows
-             * this returns an inaccurate result.
-             * This has to be fixed by the person who did the setup for the virtual
-             * machines.
-             * As of right now, we do not know how to fix the bug.
-             */
+            ret = "getCpuCountFromWindows: UNSUCCESSFUL_EXECUTION";
             // To get number of logical processors add "NumberOfLogicalProcessors" after get
-            // String cmdResult = execGroovy('wmic computersystem get NumberOfProcessors /Format:List', computer);
+            String cmdResult = execGroovy('wmic computersystem get NumberOfProcessors /Format:List', computer);
 
-            // if (cmdResult.length() > 0 && !cmdResult.equals("error")) {
-            //  String[] cmdResultArray = cmdResult.split("\\n");
-
-            //  int index = 0;
-            //  int numberOfProcessors = 1;
-            //  int numberOfLogicalProcessors;
-            //  while (index < cmdResultArray.length && ret < 0) {
-            //      // TODO: the numbers don't match with what's on jenkins
-            //      numberOfProcessors *= Integer.parseInt((cmdResultArray[index].split("="))[1].trim());
-            //      index++;
-            //  }
-            //  ret = numberOfProcessors;
-            // }
-
-            // Here's the hack approach
-            String cmdResult = execGroovy("wmic cpu get SocketDesignation", computer);
             if (cmdResult.length() > 0 && !cmdResult.equals("error")) {
-                // The -1 is to account for header row
-                ret = cmdResult.split("\\n").length - 1;
+                String[] cmdResultArray = cmdResult.split("\\n");
+                ret =  Integer.parseInt((cmdResultArray[0].split("="))[1].trim());
             }
         }
 
@@ -894,7 +874,7 @@ class  NodeHelper {
             ret = "getCpuCountFromAix: UNSUCCESSFUL_EXECUTION";
             String cmdResult = execGroovy('pmcycles -m', computer);
 
-            if (cmdResult.length() > 0 && !cmdResult.equals("error")) {
+            if (!cmdResult.equals("error")) {
                 ret = cmdResult.split("\\n").length;
             }
         }
@@ -906,7 +886,7 @@ class  NodeHelper {
         String ret = "getCpuCountFromZos: COMPUTER_NOT_FOUND";
 
         if (computer != null) {
-
+            // TODO: Figure out the command to get CPU count for zos
         }
 
         return ret;
@@ -919,7 +899,7 @@ class  NodeHelper {
             ret = "getCpuCountFromMac: UNSUCCESSFUL_EXECUTION";
             String cmdResult = execGroovy('/usr/sbin/sysctl hw.ncpu', computer);
 
-            if (cmdResult.length() > 0 && !cmdResult.equals("error")) {
+            if (!cmdResult.equals("error")) {
                 ret = cmdResult.split(" ")[1];
             }
         }
@@ -976,8 +956,13 @@ class  NodeHelper {
 
         Computer computer = getComputer(computerName);
         if (computer != null) {
-            Map<String, Object> monitoringData = computer.getMonitorData();         
-            ret = monitoringData.get('hudson.node_monitors.DiskSpaceMonitor').getGbLeft();
+            def diskSpaceMonitor = computer.getMonitorData().get('hudson.node_monitors.DiskSpaceMonitor');         
+            if (diskSpaceMonitor != null) {
+                ret = diskSpaceMonitor.getGbLeft();
+            } else {
+                ret = "DISK_REMAINING_SPACE_INFO_NOT_FOUND";
+            }
+            
         }
 
         return ret;
@@ -996,8 +981,12 @@ class  NodeHelper {
 
         Computer computer = getComputer(computerName);
         if (computer != null) {
-            Map<String, Object> monitoringData = computer.getMonitorData();
-            ret = monitoringData.get('hudson.node_monitors.DiskSpaceMonitor').getPath();
+            def diskSpaceMonitor = computer.getMonitorData().get('hudson.node_monitors.DiskSpaceMonitor');         
+            if (diskSpaceMonitor != null) {
+                ret = diskSpaceMonitor.getPath();
+            } else {
+                ret = "DISK_PATH_INFO_NOT_FOUND";
+            }
         }
 
         return ret;
@@ -1071,7 +1060,6 @@ class  NodeHelper {
      * @return human readable format as string
      */
     public String convertToHumanReadableByteCount(long rawBytes) {
-
         int unit = 1024;
         if (rawBytes < unit) return rawBytes + " B";
         int exp = (int) (Math.log(rawBytes) / Math.log(unit));
