@@ -377,9 +377,9 @@ class  NodeHelper {
                 case "aix":
                     ret = getAIXOsInfo(computer);
                     break;
-                // case "zos":
-                    // ret = // TODO: find the command
-                    // break; 
+                case "zos":
+                    ret = getZosInfo(computer);
+                    break; 
                 case "mac":
                     ret = getMacOsInfo(computer);
                     break;
@@ -392,6 +392,27 @@ class  NodeHelper {
         return ret;
     }
 
+    private Tuple getZosInfo(Computer computer) {
+        String retOsName = "getZosInfo:COMPUTER_NOT_FOUND";
+        String retOsVersion = "getZosInfo:COMPUTER_NOT_FOUND";
+
+        if (computer != null) {
+            retOsName = "getZosInfo:UNSUCCESSFUL_EXECUTION";
+            retOsVersion = "getZosInfo:UNSUCCESSFUL_EXECUTION";
+
+            retOsName = "zos";
+            /* During testing it was discovered that the kernel version
+             * number matches the result of sysvar VERSION as a result
+             * instead of making a system exec I ended up calling
+             * jenkins api for the kernel info
+             */
+            def kernelVersionInfo = getOsKernelInfo(computer.getName()).get(1);
+            retOsVersion = kernelVersionInfo.substring(0,kernelVersionInfo.lastIndexOf("."));
+
+        }
+
+        return new Tuple(retOsName,retOsVersion);
+    }
     private Tuple getWindowsOsInfo(Computer computer) {
         String retOsName = "getWindowsOsInfo:COMPUTER_NOT_FOUND";
         String retOsVersion = "getWindowsOsInfo:COMPUTER_NOT_FOUND";
