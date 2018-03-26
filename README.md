@@ -20,7 +20,7 @@ The NodeHelper API contains helper functions to query basic machine stats in rea
 
 ### Space Monitoring (WorkspaceInfo.groovy)
 Iterates over online nodes on Jenkins and prints the contents of the workspace directory along with the space they occupy
-* The computers it iterates over can be limited by parameter input
+* The computers it iterates over can be limited by parameter input ```projectLabel```
 * As of now, it only works for linux, aix, and mac
 
 ## How-to
