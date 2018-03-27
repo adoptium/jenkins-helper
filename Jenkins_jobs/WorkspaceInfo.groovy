@@ -68,7 +68,7 @@ node {
                                             script: '#!/bin/sh -e\n du -sg ' + workspaceDirectory + '/* | sort -n',
                                             returnStdout: true).trim()
 
-                                    println beautify(machineName,workspaceDirectory, workspaceStats,subdirectories)
+                                    println beautify(machineName + 'in Gb',workspaceDirectory, workspaceStats,subdirectories)
 
                                     cleanWs()
                                 }
