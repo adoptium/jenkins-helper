@@ -23,6 +23,19 @@ Iterates over online nodes on Jenkins and prints the contents of the workspace d
 * The computers it iterates over can be limited by input parameter, ```projectLabel```
 * As of now, it only works for linux, aix, and mac
 
+### Create New Node (CreateNewNode.groovy)
+Used to create new nodes with any basic labels
+
+* This job expects 3 parameters
+    * ```String machineNames```
+        * Comma seperated host names of the machine(s)
+    * ```String machineIPs```
+        * Comma seperated IP address of the machine(s)
+    * ```String labelStrings```
+        * Labels you would like to be added to the machine.
+        * Each label must be separated by spaces and labels for different machines must be separated by `,`
+        * If identical labels need to be applied to all the machines, only one set of labels need to be supplied
+
 ## How-to
 
 ### Setup

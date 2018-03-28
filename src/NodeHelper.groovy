@@ -26,8 +26,6 @@ import hudson.plugins.sshslaves.SSHLauncher;
 
 class  NodeHelper {
 
-    // TODO: Move strings out to a config file
-
     /* Java Web Start (Windows)
         - Internal data directory: remoting
        SSH (most linux machines)
@@ -74,7 +72,7 @@ class  NodeHelper {
 
         String ret = "INVALID_NODE_NAME";
 
-        if (newNodeName.length() > 2) { // TODO: Some sort of validation for node names
+        if (newNodeName.length() > 2) {
             DumbSlave newSlave = new DumbSlave(
                         newNodeName,
                         newNodeRemoteFS,
@@ -1030,7 +1028,7 @@ class  NodeHelper {
         return ret;
     }
 
-    private String execGroovy(String cmd, Computer computer) { // TODO: Also check for invalid command (?)
+    private String execGroovy(String cmd, Computer computer) {
         String ret = "execGroovy:INVALID_COMMAND";
 
         if (cmd.length() > 1 && computer != null) {
@@ -1115,9 +1113,11 @@ class  NodeHelper {
              * the 2
              */
             ret = Jenkins.getInstance().getComputer(computerName);
-            if (ret == null) {
-                // tries to search for computer without the domain
-                ret = Jenkins.getInstance().getComputer(computerName.substring(0,computerName.indexOf(".")));
+            if (ret == null) { // tries to search for computer without the domain
+                int endIndex = computerName.indexOf(".");
+                if ( endIndex > 0) {
+                    ret = Jenkins.getInstance().getComputer(computerName.substring(0,endIndex));
+                }
             }
         }
 
