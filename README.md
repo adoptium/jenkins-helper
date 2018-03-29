@@ -1,7 +1,8 @@
 # openjdk-jenkins-helper
-The NodeHelper API contains helper functions to query basic machine stats in real time, add new machines, update/overwrite labels.
 
-## Functions
+## Files
+### API Functions (NodeHelper.groovy)
+The NodeHelper API contains helper functions to query basic machine stats in real time, add new machines, update/overwrite labels.
 * Get CPU count ```String getCpuCount(String computerName)```
 * Get Installed memory ```Tuple  getMemory(String computerName)```
 * Get OS information ```Tuple  getOsInfo(String computerName)```
@@ -16,6 +17,11 @@ The NodeHelper API contains helper functions to query basic machine stats in rea
 * Add new Node ```String addNewNode(String newNodeName,String newNodeDescription,String newNodeRemoteFS,int newNodeNumExecutors,Mode newNodeMode,String newNodeLabelString,def launcher)```
 * Add Label ```String addLabel(String computerName, String label)```
 * Append Label ```String appendlabel(String computerName, String label)```
+
+### Space Monitoring (WorkspaceInfo.groovy)
+Iterates over online nodes on Jenkins and prints the contents of the workspace directory along with the space they occupy
+* The computers it iterates over can be limited by input parameter, ```projectLabel```
+* As of now, it only works for linux, aix, and mac
 
 ## How-to
 
