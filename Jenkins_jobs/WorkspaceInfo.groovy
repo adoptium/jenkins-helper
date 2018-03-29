@@ -13,7 +13,12 @@ node {
     stage('Print_Space_Monitoring_Data') {
         NodeHelper nodeHelper = new NodeHelper();
 
-        String projectLabel = params.projectLabel;
+        String projectLabel;
+        if (params.projectLabel.length() > 1) {
+            projectLabel = params.projectLabel;            
+        } else {
+            projectLabel = "all";
+        }
 
         def currentInstance = Jenkins.getInstance();
         Computer[] computers;
@@ -28,7 +33,8 @@ node {
             if (computer.isOnline() && computer.getName() != "") {
                 String kernelName = nodeHelper.getOsKernelInfo(computer.getName()).get(0).toLowerCase()
 
-                if (nodeHelper.getLabels(computer.getName()).contains(projectLabel)) {
+                if (projectLabel.equals("all") 
+                        || nodeHelper.getLabels(computer.getName()).contains(projectLabel)) {
                 
                     String workspaceDirectory = nodeHelper.getHomeDirectoryPath(machineName);
 
@@ -154,4 +160,8 @@ def beautify(machineName, workspaceDirectory, workspaceStats, subdirectories) {
     output += "\n=======================================================================\n\n";
 }
 
-parallel clones
+
+timeout(time: params.timeout, unit: 'HOURS') {
+    parallel clones
+}
+
