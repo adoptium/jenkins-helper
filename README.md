@@ -3,6 +3,7 @@
 ## Files
 ### API Functions (NodeHelper.groovy)
 The NodeHelper API contains helper functions to query basic machine stats in real time, add new machines, update/overwrite labels.
+
 * Get CPU count ```String getCpuCount(String computerName)```
 * Get Installed memory ```Tuple  getMemory(String computerName)```
 * Get OS information ```Tuple  getOsInfo(String computerName)```
@@ -20,6 +21,7 @@ The NodeHelper API contains helper functions to query basic machine stats in rea
 
 ### Space Monitoring (WorkspaceInfo.groovy)
 Iterates over online nodes on Jenkins and prints the contents of the workspace directory along with the space they occupy
+
 * The computers it iterates over can be limited by input parameter, ```projectLabel```
 * As of now, it only works for linux, aix, and mac
 
@@ -35,6 +37,42 @@ Used to create new nodes with any basic labels
         * Labels you would like to be added to the machine.
         * Each label must be separated by spaces and labels for different machines must be separated by `,`
         * If identical labels need to be applied to all the machines, only one set of labels need to be supplied
+
+### Update Machine Identifiers (UpdateMachineIdentifiers.groovy)
+Used to update machine labels and description
+
+* The computers it iterates over can be limited by input parameter, ```projectLabel```
+* The job expects 5 input parameters
+    * ```boolean overWriteLabels```
+        * Does excatly as the name suggests, completely wipes previous labels
+        * If set true, you do not need to pass a ```projectLabel```
+    * ```String labels```
+        * Labels you would like to be added to the machine.
+         * Each label must be separated by spaces and labels for different machines must be separated by `,` 
+         * If identical labels need to be applied to all the machines, only one set of labels need to be supplied
+         * Use Cases:
+              * Multiple machines, unique labels: `machine1Label1 machine1Label2, machine2Label1 machine2Label2`
+              * Single or multiple machines, identical labels: `Label1 Label2`
+    * ```String machineNames```
+        * Can either enter a list of names or a single name. For list seperate them with ","
+    * ```boolean updateDescription```
+        * If this is set true, the job will update description
+        * This has higher precedence than overWriteLabels
+    * ```String projectlabel```
+        * This limits which machines will be touched
+* Use Cases:
+    * Update labels:
+        * Objective: add default labels(os, arch, and kernel)
+        * Procedure: overWriteLabels is not set and only the machine name(s) is supplied
+    * Overwrite Labels:
+        * Objective: overwrite previous labels with new ones
+        * Procedure: overWriteLabels is set and machine name(s) + labels are supplied
+    * Append labels:
+        * Objective: want to add a custom label.
+        * Procedure: supply labels and machine names
+    * Update description:
+        * It adds CPU count, Disk space and installed RAM to the description
+        * Procedure: have ```updateDescription``` parameter checked
 
 ## How-to
 
