@@ -226,8 +226,16 @@ class  NodeHelper {
             def osInfo = getOsInfo(computer.getName());
             String osVersion = osInfo.get(1);
 
-            ret = "sw.os." + osInfo.get(0) + osVersion;
-            ret += " sw.os." + osInfo.get(0);
+            ret = String.format(
+                    Constants.OS_LABEL_FORMAT,
+                    Constants.OS_LABEL_PREFIX,
+                    osInfo.get(0),osVersion);
+            ret += ' ';
+            ret += String.format(
+                    Constants.GENERIC_LABEL_FORMAT,
+                    Constants.OS_LABEL_PREFIX,
+                    osInfo.get(0));
+
         }
 
         return ret.toLowerCase();
@@ -246,7 +254,10 @@ class  NodeHelper {
         
         Computer computer = getComputer(computerName);
         if (computer != null) {
-            ret = "hw.endian." + getEndian(computer.getName());
+            ret = String.format(
+                    Constants.GENERIC_LABEL_FORMAT,
+                    Constants.ENDIAN_LABEL_PREFIX,
+                    getEndian(computer.getName()));
         }
 
         return ret.toLowerCase();
@@ -273,7 +284,10 @@ class  NodeHelper {
                     break;
             }
 
-            ret = "hw.platform." + ret;
+            ret = String.format(
+                    Constants.GENERIC_LABEL_FORMAT,
+                    Constants.PLATFORM_LABEL_PREFIX,
+                    ret);
         }
 
         return ret.toLowerCase();
@@ -328,7 +342,10 @@ class  NodeHelper {
                     ret = "INVALID_ARCH";
                     break;
             }
-            ret = "hw.arch." + ret;
+            ret = String.format(
+                    Constants.GENERIC_LABEL_FORMAT,
+                    Constants.ARCH_LABEL_PREFIX,
+                    ret);
         }
 
 
@@ -341,7 +358,10 @@ class  NodeHelper {
         Computer computer = getComputer(computerName);
         if (computer != null) {
             def kernelInfo = getOsKernelInfo(computer.getName());
-            ret = "sw.os." + kernelInfo.get(0);
+            ret = String.format(
+                    Constants.GENERIC_LABEL_FORMAT,
+                    Constants.OS_LABEL_PREFIX,
+                    kernelInfo.get(0));
         }
 
         return ret;
@@ -352,7 +372,11 @@ class  NodeHelper {
 
         Computer computer = getComputer(computerName);
         if (computer != null) {
-            ret = "hw.hypervisor.";// TODO: finish implementation, get something
+            // TODO: finish implementation, get something
+            // ret = String.format(
+            //         Constants.GENERIC_LABEL_FORMAT,
+            //         Constants.HYPERVISOR_LABEL_PREFIX,
+            //         kernelInfo.get(0));
         }
 
         return ret.toLowerCase();
@@ -523,7 +547,11 @@ class  NodeHelper {
                             /* As of now, cases 1-3 should work with
                              * parseRedHatOsInfoString
                              */
-                            osInfo = parseRedHatOsInfoString(cmdResult);
+                            if (cmdResult.contains("Fedora")) {
+                                osInfo = parseFedoraOsInfoString(cmdResult);
+                            } else {
+                                osInfo = parseRedHatOsInfoString(cmdResult);
+                            }
                             break;
                         case 4:
                             osInfo = parseSuseOsInfoString(cmdResult);
@@ -626,6 +654,29 @@ class  NodeHelper {
             if (!retOsVersion.equals("")) {
                 retOsVersion = retOsVersion.substring(0,retOsVersion.indexOf(".")); // Removes the subversion
             }
+        }
+
+        return new Tuple(retOsName,retOsVersion);
+    }
+
+    private Tuple parseFedoraOsInfoString(String rawValue) {
+        String retOsName = "parseFedoraOsInfoString:INVALID_INPUT";
+        String retOsVersion = "parseFedoraOsInfoString:INVALID_INPUT";
+
+        /* Sample raw values
+         * Fedora release 24 (twenty-four)
+         */
+
+        if (rawValue.length() > 0) {
+            rawValue = rawValue.trim();
+
+            String[] rawValueSplit = rawValue.split(" ");
+
+            retOsName = rawValueSplit[0];
+            if (rawValueSplit[1].equals("release")) {
+                 retOsVersion = rawValueSplit[2];
+            }
+
         }
 
         return new Tuple(retOsName,retOsVersion);
@@ -800,6 +851,26 @@ class  NodeHelper {
         Computer computer = getComputer(computerName);
         if (computer != null) {
             ret = computer.getDescription();
+        }
+
+        return ret;
+    }
+
+    /**
+     * Sets the machine description from jenkins
+     *
+     * @param compterName computer whose location is needed
+     * @param description the new updated description
+     *
+     * @return machine description as string
+     */
+    public String setDescription(String computerName, String description) {
+        String ret = "setDescription:COMPUTER_NOT_FOUND";
+
+        Computer computer = getComputer(computerName);
+        if (computer != null) {
+            computer.getNode().setNodeDescription(description);
+            ret = getDescription(computerName);
         }
 
         return ret;
@@ -1093,7 +1164,7 @@ class  NodeHelper {
          */
         humanReadable = humanReadable/1000;
 
-        return String.format("%d%sB", (Math.rint(humanReadable)).intValue(), pre);
+        return String.format("%d %sB", (Math.rint(humanReadable)).intValue(), pre);
     }
 
     /**
