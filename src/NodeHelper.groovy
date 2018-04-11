@@ -857,26 +857,6 @@ class  NodeHelper {
     }
 
     /**
-     * Sets the machine description from jenkins
-     *
-     * @param compterName computer whose location is needed
-     * @param description the new updated description
-     *
-     * @return machine description as string
-     */
-    public String setDescription(String computerName, String description) {
-        String ret = "setDescription:COMPUTER_NOT_FOUND";
-
-        Computer computer = getComputer(computerName);
-        if (computer != null) {
-            computer.getNode().setNodeDescription(description);
-            ret = getDescription(computerName);
-        }
-
-        return ret;
-    }
-
-    /**
      * Gets cpu count via exec on the computer passed
      * in.
      *
