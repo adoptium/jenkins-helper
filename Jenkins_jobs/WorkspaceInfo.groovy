@@ -21,7 +21,7 @@ stage('Pepare_Space_Monitoring_Jobs') {
     } else {
         projectLabel = "all"
     }
-    
+
     ArrayList<Computer> computers = new ArrayList<Computer>()
     if (params.machines.length() > 1) {
         String[] inputMachines = params.machines.split(",")
@@ -70,7 +70,7 @@ stage('Pepare_Space_Monitoring_Jobs') {
                         subdirectoryStatscmd = '#!/bin/sh -e\n du -sh ' + workspaceDirectory + '/* | sort -nr'
                         statOutputHeading = machineName
                         break;
-                    /* This is commented out because it takes way too long to return 
+                    /* This is commented out because it takes way too long to return
                      * it isn't a top priority
                      * dir /s /-c
                      */
@@ -136,7 +136,7 @@ def setupParallelPipelines(
         try {
             timeout(time: params.timeout as Integer, unit: 'HOURS') {
                 node (machineName) 
-                {                    
+                {
                     String workspaceStats = sh (
                             script: workspaceStatscmd,
                             returnStdout: true).trim()
@@ -158,11 +158,13 @@ def setupParallelPipelines(
 
 parallel clones
 
-println "About to print error messages"
-String errors = "\n" // This is so that the first line after "Error" in the console
-for (Map<String, String> entry : result) {
-    errors += entry.key + ":" + entry.value + "\n\n"
-}
+if (result.length() > 0) { // Checks if any errors were caught
+    println "About to print error messages"
+    String errors = "\n" // This is so that the first line after "Error" in the console
+    for (Map<String, String> entry : result) {
+        errors += entry.key + ":" + entry.value + "\n\n"
+    }
 
-error (errors)
+    error (errors)
+}
 
