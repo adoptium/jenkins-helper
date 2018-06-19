@@ -26,7 +26,7 @@ node {
         for (int index = 0; index < machineIPs.length; index++) {
 
             if (nodeHelper.getComputer(machines[index]) != null) {
-                println "Machine(${machines[index]}) already exists."
+                println "Machine: '${machines[index]}' already exists."
             } else {
                 if (Integer.parseInt(machineIPs[index].split("\\.")[0]) == 10) {
                     launcher = new CommandLauncher(Constants.SSH_COMMAND + "${machineIPs[index]} " + Constants.WGET_SLAVE_JAR);
@@ -41,9 +41,13 @@ node {
                                 params.SSHCredentialId.isEmpty() ? Constants.SSH_CREDENTIAL_ID : params.SSHCredentialId,
                                 null, null, null, null, null, null, null,
                                 new NonVerifyingKeyVerificationStrategy());
-                    remoteFS = Constants.REMOTE_FS;
+                    if (machines[index].contains("osx")){
+                        remoteFS = Constants.OSX_REMOTE_FS;
+                    } else {
+                        remoteFS = Constants.REMOTE_FS;
+                    }
                 }
-                
+
                 newMachineLabels = labels[index%labels.length]
 
                 newMachineName = nodeHelper.addNewNode(
@@ -70,7 +74,7 @@ node {
                    (Jenkins.getInstance().getComputer(newMachineName)).connect(false);
                 }
 
-                println "Machine ${newMachineName} was added with following labels ${newMachineLabels}";
+                println "Machine:'${newMachineName}'\nlabels: '${newMachineLabels}'\nremote root directory: '${remoteFS}'";
             }
         }
 
