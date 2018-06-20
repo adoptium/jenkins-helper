@@ -158,7 +158,7 @@ def setupParallelPipelines(
 
 parallel clones
 
-if (result.length() > 0) { // Checks if any errors were caught
+if (!result.isEmpty()) { // Checks if any errors were caught
     println "About to print error messages"
     String errors = "\n" // This is so that the first line after "Error" in the console
     for (Map<String, String> entry : result) {
