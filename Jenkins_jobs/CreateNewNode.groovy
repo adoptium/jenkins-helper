@@ -23,39 +23,38 @@ node {
                     returnStdout: true
                 ).trim()
         def FILES_LIST = FILES.split("\\n")
-        echo "${FILES_LIST}"
         for (machine in FILES_LIST){ 
             def EXISTED = false;
-            def emptyMap = [:];
-            def halfmachine = "";
+            def configMap = [:];
+            def TruncComment = "";
             if (machine =~ /[^\s]+ \s*(\S+)\s*=\s*(.*)?(?:#|$)\S*/) {
-            if (machine.contains("#")) {
-                def location = machine.indexOf("#")
-                halfmachine = machine.substring(location + 1,machine.length())
-            } else {
-                halfmachine = ""
-            }
-            def splitLines = halfmachine.split(',')
-            splitLines.each {
-                if (it != "" && it != null){
-                    String[] parts = it.split("=",2);
-                    emptyMap.put(parts[0],parts[1])
-                }
-            }
+                if (machine.contains("#")) {
+                    def location = machine.indexOf("#")
+                    TruncComment = machine.substring(location + 1,machine.length())
+                    def splitLines = TruncComment.split(',')
+                    splitLines.each {
+                        if (it != "" && it != null){
+                            String[] parts = it.split("=",2);
+                            configMap.put(parts[0],parts[1])
+                        }
+                    }
+                // Original: ub14x64cudart1.canlab.ibm.com ansible_host=9.24.248.175 # NVidia Cuda
+                // TruncComment ub14x64cudart1.canlab.ibm.com ansible_host=9.24.248.175
+
                 for (aSlave in hudson.model.Hudson.instance.slaves) {
                     if (machine.contains(aSlave.name)){
                     EXISTED = true;
 
-                    if (emptyMap.get("Labels") != null && emptyMap.get("Labels") != aSlave.getLabelString()) {
-                        aSlave.setLabelString(emptyMap.get("Labels"))
+                    if (configMap.get("Labels") != null && configMap.get("Labels") != aSlave.getLabelString()) {
+                        aSlave.setLabelString(configMap.get("Labels"))
                     }
 
-                    if (emptyMap.get("Executor") != null && emptyMap.get("Executor") != aSlave.getNumExecutors()) {
-                        aSlave.setNumExecutors(emptyMap.get("Executor").toInteger())
+                    if (configMap.get("Executor") != null && configMap.get("Executor") != aSlave.getNumExecutors()) {
+                        aSlave.setNumExecutors(configMap.get("Executor").toInteger())
                     }
 
-                    if (emptyMap.get("Description")!= null && emptyMap.get("Description") != aSlave.getDescriptor()){
-                        aSlave.setNodeDescription(emptyMap.get("Description"))
+                    if (configMap.get("Description")!= null && configMap.get("Description") != aSlave.getDescriptor()){
+                        aSlave.setNodeDescription(configMap.get("Description"))
                     }
                     break;
                 }
@@ -68,6 +67,7 @@ node {
                         name = it
                     }
                     machines = machines + "${name}"
+                    // if machine in the ini is not on Jenkins, then start the new machine by setting its config according to the ini file
                     def hostLocation = machine.indexOf("=")
                     def machineIP
                     if (machine.contains("#")) {
@@ -79,8 +79,8 @@ node {
                     }
                     
                     machineIPs = machineIPs + machineIP
-                    if (emptyMap.get("Labels") != null) {
-                        labels = labels + emptyMap.get("Labels");
+                    if (configMap.get("Labels") != null) {
+                        labels = labels + configMap.get("Labels");
                     }
                 }
             }
@@ -142,7 +142,7 @@ node {
                    (Jenkins.getInstance().getComputer(newMachineName)).connect(false);
                 }
 
-                println "Machine:'${newMachineName}'\nlabels: '${newMachineLabels}'\nremote root directory: '${remoteFS}'";
+                println "\nMachine:'${newMachineName}'\nlabels: '${newMachineLabels}'\nremote root directory: '${remoteFS}'\n";
             }
         }
 

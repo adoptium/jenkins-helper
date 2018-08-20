@@ -1,12 +1,12 @@
 class Constants {
-    static final String USERNAME = "j9build";
+    static final String USERNAME = "jenkins";
     static final String[] IGNORE_LABELS = ['.ignore'];
     static final String REMOTE_FS = "/home/${USERNAME}";
     static final String WIN_REMOTE_FS = "C:\\Users\\${USERNAME}";
     static final String OSX_REMOTE_FS = "/Users/${USERNAME}";
     
     // This the key that'll be used for SSHLauncher in CreateNewNode
-    static final String SSH_CREDENTIAL_ID = "83181e25-eea4-4f55-8b3e-e79615733226";
+    static final String SSH_CREDENTIAL_ID = "";
     
     static final String SSH_COMMAND = "ssh -C -i ${SSH_KEY_LOCATION} ${USERNAME}@";
     static final String SSH_KEY_LOCATION = "";
