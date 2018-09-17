@@ -1213,4 +1213,18 @@ class  NodeHelper {
 
         return ret;
     }
+
+    /**
+     * Determine if a node exists and is online for the given node label
+     *
+     * @param nodeLabel
+     * @return
+     */
+    public static boolean nodeIsOnline(String nodeLabel) {
+        return Jenkins.getInstance().getLabel(nodeLabel).nodes
+                .findAll {it instanceof hudson.model.Slave }
+                .collect {it.getComputer() }
+                .findAll {it.isOnline() }
+                .size() > 0
+    }
 }
