@@ -1213,4 +1213,14 @@ class  NodeHelper {
 
         return ret;
     }
+
+    /**
+     * Determine if a node exists for the given node label
+     *
+     * @param nodeLabel
+     * @return
+     */
+    public static boolean nodeExists(String nodeLabel) {
+        return Jenkins.getInstance().getLabel(nodeLabel).nodes.size() > 0
+    }
 }

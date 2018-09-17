@@ -18,6 +18,7 @@ The NodeHelper API contains helper functions to query basic machine stats in rea
 * Add new Node ```String addNewNode(String newNodeName,String newNodeDescription,String newNodeRemoteFS,int newNodeNumExecutors,Mode newNodeMode,String newNodeLabelString,def launcher)```
 * Add Label ```String addLabel(String computerName, String label)```
 * Append Label ```String appendlabel(String computerName, String label)```
+* Node Exists ```static boolean nodeExists(String nodeLabel```
 
 ### Space Monitoring (WorkspaceInfo.groovy)
 Iterates over online nodes on Jenkins and prints the contents of the workspace directory along with the space they occupy
