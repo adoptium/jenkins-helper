@@ -26,4 +26,16 @@ class JobHelper {
             job.fullName == jobName && !job.isDisabled()
         }.size() > 0;
     }
+
+    /**
+    * Determines if a job is currently running
+    * @param jobName
+    * @return
+    */
+    public static boolean jobIsRunning(String jobName) {
+        return Jenkins.getInstance().getAllItems()
+            .findAll { job -> 
+                job.fullName == jobName && (job.isBuilding() || job.isQueued())
+            }.size() > 0;
+    }
 }
