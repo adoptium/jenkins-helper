@@ -28,7 +28,7 @@ class JobHelper {
     }
 
     /**
-    * Determines if a job is currently running
+    * Determines if a job is currently running or queued up
     * @param jobName
     * @return
     */
@@ -38,4 +38,22 @@ class JobHelper {
                 job.fullName == jobName && (job.isBuilding() || job.isQueued())
             }.size() > 0;
     }
+
+    /**
+    * Gets the full folder of a job
+    * @param jobName
+    * @return
+    */
+    public static String getJobFolder(String jobName) {
+        try {
+            Jenkins.getInstance().getAllItems().findAll { job -> 
+                if (job.fullName == jobName) {
+                    return job.fullProjectName
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("${e.getMessage()}")
+        }
+    }
+
 }
