@@ -35,7 +35,7 @@ class JobHelper {
     public static boolean jobIsRunning(String jobName) {
         return Jenkins.getInstance().getAllItems()
             .findAll { job -> 
-                job.fullName == jobName && (job.isBuilding() || job.isQueued())
+                job.fullName == jobName && (job.isBuilding() || job.isInQueue())
             }.size() > 0;
     }
 }
