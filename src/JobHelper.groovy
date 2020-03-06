@@ -33,7 +33,7 @@ class JobHelper {
     * @return
     */
     public static boolean jobIsRunning(String jobName) {
-        return Jenkins.getInstance().getAllItems()
+        return Jenkins.get().getAllItems()
             .findAll { job -> 
                 job.fullName == jobName && (job.isBuilding() || job.isInQueue())
             }.size() > 0;
@@ -46,13 +46,15 @@ class JobHelper {
     */
     public static String getJobFolder(String jobName) {
         try {
-            Jenkins.getInstance().getAllItems().findAll { job -> 
-                if (job.fullName == jobName) {
-                    return job.fullProjectName
-                }
-            }
+          def foundJob
+          Jenkins.get().getAllItems().each { job -> 
+              if (job.fullName == jobName) {
+                  foundJob = job.getFullDisplayName()
+              }
+          }
+          return foundJob
         } catch (Exception e) {
-            throw new RuntimeException("${e.getMessage()}")
+          throw new RuntimeException("${e.getMessage()}")
         }
     }
 
