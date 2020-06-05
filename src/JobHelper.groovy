@@ -12,6 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import jenkins.model.Jenkins;
+import groovy.json.JsonSlurper;
 
 class JobHelper {
 
@@ -57,5 +58,26 @@ class JobHelper {
           throw new RuntimeException("${e.getMessage()}")
         }
     }
+     
+    /**
+    * Queries an api and returns the results as a JSON object
+    * @param query
+    * @return
+    */
+    private static queryApi(String query) {
+        try {
+            def get = new URL(query).openConnection()
+            def parser = new JsonSlurper()
+            return parser.parseText(get.getInputStream().getText())
+        } catch (Exception e) {
+            throw new RuntimeException("${e.getMessage()}")
+        }
+    }
+
+    /**
+    * Queries the Adopt API for all releases
+    * @return
+    */
+    public static getAvailableReleases() { return queryApi("https://api.adoptopenjdk.net/v3/info/available_releases") }
 
 }
