@@ -67,6 +67,7 @@ class JobHelper {
     private static queryApi(String query) {
         try {
             def get = new URL(query).openConnection()
+            get.setRequestProperty("User-Agent", "adopt-jenkins-helper")
             def parser = new JsonSlurper()
             return parser.parseText(get.getInputStream().getText())
         } catch (Exception e) {
