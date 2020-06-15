@@ -87,7 +87,7 @@ class JobHelper {
                 break
             } catch (RuntimeException e) {
                 println "Failed to query or parse the adopt api\nError:${e}\nRetrying in 30 seconds..."
-                sleep 30
+                sleep 30000
             }
         }
 
