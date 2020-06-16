@@ -90,11 +90,7 @@ class JobHelper {
                 sleep 30000
             }
         }
-
-        if (responseObject == null) {
-            println "Failed to query or parse the adopt api after 5 attempts"
-            throw new Exception()
-        } else { return responseObject }
+        return responseObject
     }
 
 }
