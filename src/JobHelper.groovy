@@ -62,23 +62,53 @@ class JobHelper {
     /**
     * Queries an api and returns the results as a JSON object
     * @param query
+    * @param attempts
+    * @param context
     * @return
     */
-    private static queryApi(String query) {
-        try {
-            def get = new URL(query).openConnection()
-            get.setRequestProperty("User-Agent", "adopt-jenkins-helper")
-            def parser = new JsonSlurper()
-            return parser.parseText(get.getInputStream().getText())
-        } catch (Exception e) {
-            throw new RuntimeException("${e.getMessage()}")
+    private static queryApi(String query, Integer attempts, def context) {
+        def jsonResponse = null
+        def parser = new JsonSlurper()
+
+        for (int count = 1; count <= attempts; count++) {
+            try {
+                def get = new URL(query).openConnection()
+                get.setRequestProperty("User-Agent", "adopt-jenkins-helper")
+                jsonResponse = parser.parseText(get.getInputStream().getText())
+
+                // Successful response
+                if (jsonResponse != null) {
+                    context.println "[SUCCESS] We have a response!\n${jsonResponse}"
+                    break
+                } else {
+                    context.println "[RETRYWARNING] API Request was successful but jsonResponse is null. Retrying in 30 seconds..."
+                    context.sleep 30000
+                }
+            } catch (Exception e) {
+                if (count == attempts) {
+                    context.println "[ERROR] Query ${count} failed\nException: ${e}"
+                    break 
+                }
+                
+                context.println "[RETRYWARNING] Query ${count} failed\nException: ${e}\nRetrying in 30 seconds..."
+                context.sleep 30000
+            }
+        }
+
+        if (jsonResponse != null) {
+            return jsonResponse
+        } else {
+            throw new RuntimeException("[ERROR] Failed to query or parse the ${query} endpoint")
         }
     }
 
     /**
     * Queries the Adopt API for all releases
+    * @param context
     * @return
     */
-    public static getAvailableReleases() { return queryApi("https://api.adoptopenjdk.net/v3/info/available_releases") }
+    public static getAvailableReleases(def context) {
+        return queryApi("https://api.adoptopenjdk.net/v3/info/available_releases", 5, context)
+    }
 
 }
