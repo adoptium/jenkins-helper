@@ -79,18 +79,6 @@ class JobHelper {
     * Queries the Adopt API for all releases
     * @return
     */
-    public static getAvailableReleases() {
-        def responseObject = null
-        for (int count = 0; count < 5; count++) {
-            try {
-                responseObject = queryApi("https://api.adoptopenjdk.net/v3/info/available_release")
-                break
-            } catch (RuntimeException e) {
-                println "Failed to query or parse the adopt api\nError:${e}\nRetrying in 30 seconds..."
-                sleep 30000
-            }
-        }
-        return responseObject
-    }
+    public static getAvailableReleases() { return queryApi("https://api.adoptopenjdk.net/v3/info/available_releases") }
 
 }
