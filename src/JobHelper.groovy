@@ -81,8 +81,8 @@ class JobHelper {
                     context.println "[SUCCESS] We have a response!\n${jsonResponse}"
                     break
                 } else {
-                    context.println "[RETRYWARNING] API Request was successful but jsonResponse is null. Retrying in 30 seconds..."
-                    context.sleep 30000
+                    context.println "[RETRYWARNING] API Request was successful but jsonResponse is null. Retrying in 60 seconds..."
+                    context.sleep(time: 30, unit: "SECONDS")
                 }
             } catch (Exception e) {
                 if (count == attempts) {
@@ -91,7 +91,7 @@ class JobHelper {
                 }
                 
                 context.println "[RETRYWARNING] Query ${count} failed\nException: ${e}\nRetrying in 30 seconds..."
-                context.sleep 30000
+                context.sleep(time: 30, unit: "SECONDS")
             }
         }
 
