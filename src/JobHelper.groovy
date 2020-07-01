@@ -91,7 +91,7 @@ class JobHelper {
                 }
                 
                 context.println "[RETRYWARNING] Query ${count} failed\nException: ${e}\nRetrying in 30 seconds..."
-                context.sleep 30000
+                context.sleep(time: 30, unit: "SECONDS")
             }
         }
 
