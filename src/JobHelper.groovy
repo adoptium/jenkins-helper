@@ -66,7 +66,7 @@ class JobHelper {
     * @param context
     * @return
     */
-    private static queryApi(String query, Integer attempts, def context) {
+    private static queryJsonApi(String query, Integer attempts, def context) {
         def jsonResponse = null
         def parser = new JsonSlurper()
 
@@ -103,12 +103,90 @@ class JobHelper {
     }
 
     /**
+    * Queries an api and returns the results as whatever object the api returns
+    * @param query
+    * @param attempts
+    * @param context
+    * @return
+    */
+    private static queryBasicApi(String query, Integer attempts, def context) {
+        def response = null
+
+        for (int count = 1; count <= attempts; count++) {
+            try {
+                def get = new URL(query).openConnection()
+                get.setRequestProperty("User-Agent", "adopt-jenkins-helper")
+                response = get.getInputStream().getText()
+
+                // Successful response
+                if (response != null) {
+                    context.println "[SUCCESS] We have a response!\n${response}"
+                    break
+                } else {
+                    context.println "[RETRYWARNING] API Request was successful but response is null. Retrying in 60 seconds..."
+                    context.sleep(time: 30, unit: "SECONDS")
+                }
+            } catch (Exception e) {
+                if (count == attempts) {
+                    context.println "[ERROR] Query ${count} failed\nException: ${e}"
+                    break 
+                }
+                
+                context.println "[RETRYWARNING] Query ${count} failed\nException: ${e}\nRetrying in 30 seconds..."
+                context.sleep(time: 30, unit: "SECONDS")
+            }
+        }
+
+        if (response != null) {
+            return response
+        } else {
+            throw new RuntimeException("[ERROR] Failed to query or parse the ${query} endpoint")
+        }
+    }
+
+    /**
     * Queries the Adopt API for all releases
     * @param context
     * @return
     */
     public static getAvailableReleases(def context) {
-        return queryApi("https://api.adoptopenjdk.net/v3/info/available_releases", 5, context)
+        return queryJsonApi("https://api.adoptopenjdk.net/v3/info/available_releases", 5, context)
+    }
+
+    /**
+    * Queries the Jenkins api for the infomation about a group of nodes appropriate to the label
+    * @param label
+    * @param context
+    * @return
+    */
+    public static getNodesFromLabel(def label, def context) {
+        return queryJsonApi("https://ci.adoptopenjdk.net/label/$label/api/json?pretty=true", 5, context)
+    }
+
+    /**
+    * Queries the Jenkins api for the infomation about a specific node
+    * @param nodeName
+    * @param context
+    * @return
+    */
+    public static getNodeInfomation(def nodeName, def context) {
+        return queryJsonApi("https://ci.adoptopenjdk.net/computer/$nodeName/api/json?pretty=true", 5, context)
+    }
+
+    /**
+    * Queries the Jenkins API for the console log of a specific job
+    * @param version
+    * @param jobName
+    * @param jobNumber
+    * @param context
+    * @return
+    */
+    public static getConsoleLog(String version, String jobName, String jobNumber, def context) {
+        return queryBasicApi(
+            "https://ci.adoptopenjdk.net/job/build-scripts/job/jobs/job/$version/job/$jobName/$jobNumber/consoleText",
+            5,
+            context
+        )
     }
 
 }
