@@ -4,7 +4,7 @@ Thanks for your interest in this project.
 
 ## Project description
 
-adoptium.net is a project to regroup assets for the Eclipse Foundation look and feel. 
+jenkins-helper is a Node helper API and helper jobs. 
 
 * https://github.com/adoptium/jenkins-helper
 
