@@ -25,6 +25,9 @@ class IndividualBuildConfig implements Serializable {
     final List<String> DYNAMIC_LIST
     final List<String> NUM_MACHINES
     final String SCM_REF
+    final String BUILD_REF,
+    final String CI_REF,
+    final String HELPER_REF,
     final String AQA_REF
     final boolean AQA_AUTO_GEN
     final String BUILD_ARGS
@@ -91,6 +94,9 @@ class IndividualBuildConfig implements Serializable {
         }
 
         SCM_REF = map.get("SCM_REF") != null ? map.get("SCM_REF").trim() : null
+        BUILD_REF = map.get("BUILD_REF") != null ? map.get("BUILD_REF").trim() : null
+        CI_REF = map.get("CI_REF") != null ? map.get("CI_REF").trim() : null
+        HELPER_REF = map.get("HELPER_REF") != null ? map.get("HELPER_REF").trim() : null
         AQA_REF = map.get("AQA_REF") != null ? map.get("AQA_REF").trim() : null
         AQA_AUTO_GEN = map.get("AQA_AUTO_GEN")
         BUILD_ARGS = map.get("BUILD_ARGS") != null ? map.get("BUILD_ARGS").trim() : null
@@ -148,6 +154,9 @@ class IndividualBuildConfig implements Serializable {
                 DYNAMIC_LIST              : DYNAMIC_LIST,
                 NUM_MACHINES              : NUM_MACHINES,
                 SCM_REF                   : SCM_REF,
+                BUILD_REF                 : BUILD_REF,
+                CI_REF                    : CI_REF,
+                HELPER_REF                : HELPER_REF,
                 AQA_REF                   : AQA_REF,
                 AQA_AUTO_GEN              : AQA_AUTO_GEN,
                 BUILD_ARGS                : BUILD_ARGS,
