@@ -25,9 +25,9 @@ class IndividualBuildConfig implements Serializable {
     final List<String> DYNAMIC_LIST
     final List<String> NUM_MACHINES
     final String SCM_REF
-    final String BUILD_REF,
-    final String CI_REF,
-    final String HELPER_REF,
+    final String BUILD_REF
+    final String CI_REF
+    final String HELPER_REF
     final String AQA_REF
     final boolean AQA_AUTO_GEN
     final String BUILD_ARGS
@@ -92,10 +92,13 @@ class IndividualBuildConfig implements Serializable {
         } else {
             NUM_MACHINES = []
         }
-
+        // git ref(tag/SHA1) from openjdk source code repo
         SCM_REF = map.get("SCM_REF") != null ? map.get("SCM_REF").trim() : null
+        // git ref(tag/SHA1/branch) from temurin-build repo
         BUILD_REF = map.get("BUILD_REF") != null ? map.get("BUILD_REF").trim() : null
+        // git ref(tag/SHA1/branch) from ci-jenkins-pipeline repo
         CI_REF = map.get("CI_REF") != null ? map.get("CI_REF").trim() : null
+        // git ref(tag/branch) from jenkins-helper repo ( do not accept SHA1 due to jenkins shared library limitation )
         HELPER_REF = map.get("HELPER_REF") != null ? map.get("HELPER_REF").trim() : null
         AQA_REF = map.get("AQA_REF") != null ? map.get("AQA_REF").trim() : null
         AQA_AUTO_GEN = map.get("AQA_AUTO_GEN")
