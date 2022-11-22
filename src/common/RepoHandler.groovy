@@ -89,7 +89,7 @@ class RepoHandler {
         context.println "[CHECKOUT] Checking out User Pipelines ${configs['remotes']['url']} : ${configs['branch']}"
         context.checkout([$class: 'GitSCM',
             branches: [ [ name: configs["branch"] ] ],
-            userRemoteConfigs: [ configs["remotes"] ]
+            userRemoteConfigs: [ [ url: configs["remotes"]['url'] ] ]
         ])
     }
 
