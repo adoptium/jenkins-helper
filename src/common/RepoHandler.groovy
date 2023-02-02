@@ -21,15 +21,25 @@ class RepoHandler {
     private final Map ADOPT_DEFAULTS_JSON
     private Map USER_DEFAULTS_JSON
 
-    private final String ADOPT_JENKINS_DEFAULTS_URL = "https://raw.githubusercontent.com/adoptium/ci-jenkins-pipelines/master/pipelines/defaults.json"
+    private final String ADOPT_JENKINS_DEFAULTS_MASTER_URL = "https://raw.githubusercontent.com/adoptium/ci-jenkins-pipelines/master/pipelines/defaults.json"
 
     /*
-    Constructor
+    Constructor: Adopt defaults from ADOPT_JENKINS_DEFAULTS_MASTER_URL
     */
     RepoHandler (Map<String, ?> configs) {
         this.configs = configs
 
         def getAdopt = new URL(ADOPT_JENKINS_DEFAULTS_URL).openConnection()
+        this.ADOPT_DEFAULTS_JSON = new JsonSlurper().parseText(getAdopt.getInputStream().getText()) as Map
+    }
+
+    /*
+    Constructor: Adopt defaults from caller
+    */
+    RepoHandler (Map<String, ?> configs, String adoptJenkinsDefaultsUrl) {
+        this.configs = configs
+
+        def getAdopt = new URL(adoptJenkinsDefaultsUrl).openConnection()
         this.ADOPT_DEFAULTS_JSON = new JsonSlurper().parseText(getAdopt.getInputStream().getText()) as Map
     }
 
