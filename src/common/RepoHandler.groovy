@@ -19,18 +19,37 @@ import groovy.json.JsonSlurper
 class RepoHandler {
     private final Map configs
     private final Map ADOPT_DEFAULTS_JSON
+    private final String pipeline_branch_override
+    private final String build_branch_override
     private Map USER_DEFAULTS_JSON
 
-    private final String ADOPT_JENKINS_DEFAULTS_URL = "https://raw.githubusercontent.com/adoptium/ci-jenkins-pipelines/master/pipelines/defaults.json"
+    private final String ADOPT_JENKINS_DEFAULTS_MASTER_URL = "https://raw.githubusercontent.com/adoptium/ci-jenkins-pipelines/master/pipelines/defaults.json"
 
     /*
-    Constructor
+    Constructor: Adopt defaults from ADOPT_JENKINS_DEFAULTS_MASTER_URL
     */
     RepoHandler (Map<String, ?> configs) {
         this.configs = configs
 
-        def getAdopt = new URL(ADOPT_JENKINS_DEFAULTS_URL).openConnection()
+        // Use "master" branch Adopt defaults
+        def getAdopt = new URL(ADOPT_JENKINS_DEFAULTS_MASTER_URL).openConnection()
         this.ADOPT_DEFAULTS_JSON = new JsonSlurper().parseText(getAdopt.getInputStream().getText()) as Map
+       
+        // No branch overrides
+        this.pipeline_branch_override = null
+        this.build_branch_override = null
+    }
+
+    /*
+    Constructor: Adopt defaults from caller, and optional pipeline/build branch overrides
+    */
+    RepoHandler (Map<String, ?> configs, Map adoptDefaults, String pipeline_branch_override, String build_branch_override) {
+        this.configs = configs
+
+        // Callers Adopt defaults and optional branch overrides
+        this.ADOPT_DEFAULTS_JSON = adoptDefaults
+        this.pipeline_branch_override = pipeline_branch_override
+        this.build_branch_override = build_branch_override
     }
 
     /*
@@ -75,9 +94,11 @@ class RepoHandler {
     Changes dir to adopt's ci-jenkins-pipelines repo
     */
     public void checkoutAdoptPipelines (def context) {
-        context.println "[CHECKOUT] Checking out Adopt Pipelines ${ADOPT_DEFAULTS_JSON['repository']['pipeline_url']} : ${ADOPT_DEFAULTS_JSON['repository']['pipeline_branch']}"
+        def branch = this.pipeline_branch_override ?: ${ADOPT_DEFAULTS_JSON['repository']['pipeline_branch']}
+   
+        context.println "[CHECKOUT] Checking out Adopt Pipelines ${ADOPT_DEFAULTS_JSON['repository']['pipeline_url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: ADOPT_DEFAULTS_JSON["repository"]["pipeline_branch"] ] ],
+            branches: [ [ name: ${branch} ] ],
             userRemoteConfigs: [ [ url: ADOPT_DEFAULTS_JSON["repository"]["pipeline_url"] ] ]
         ])
     }
@@ -86,9 +107,11 @@ class RepoHandler {
     Changes dir to the user's ci-jenkins-pipelines repo
     */
     public void checkoutUserPipelines (def context) {
-        context.println "[CHECKOUT] Checking out User Pipelines ${configs['remotes']['url']} : ${configs['branch']}"
+        def branch = this.pipeline_branch_override ?: ${configs['branch']}
+
+        context.println "[CHECKOUT] Checking out User Pipelines ${configs['remotes']['url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: configs["branch"] ] ],
+            branches: [ [ name: ${branch} ] ],
             userRemoteConfigs: [ configs["remotes"] ]
         ])
     }
@@ -97,9 +120,11 @@ class RepoHandler {
     Changes dir to adopt's temurin-build repo
     */
     public void checkoutAdoptBuild (def context) {
-        context.println "[CHECKOUT] Checking out Adopt Build ${ADOPT_DEFAULTS_JSON['repository']['build_url']} : ${ADOPT_DEFAULTS_JSON['repository']['build_branch']}"
+        def branch = this.build_branch_override ?: ${ADOPT_DEFAULTS_JSON['repository']['build_branch']}
+
+        context.println "[CHECKOUT] Checking out Adopt Build ${ADOPT_DEFAULTS_JSON['repository']['build_url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: ADOPT_DEFAULTS_JSON["repository"]["build_branch"] ] ],
+            branches: [ [ name: ${branch} ] ],
             userRemoteConfigs: [ [ url: ADOPT_DEFAULTS_JSON["repository"]["build_url"] ] ]
         ])
     }
@@ -108,9 +133,11 @@ class RepoHandler {
     Changes dir to user's temurin-build repo
     */
     public void checkoutUserBuild (def context) {
-        context.println "[CHECKOUT] Checking out User Build ${USER_DEFAULTS_JSON['repository']['build_url']} : ${USER_DEFAULTS_JSON['repository']['build_branch']}"
+        def branch = this.build_branch_override ?: ${USER_DEFAULTS_JSON['repository']['build_branch']}
+
+        context.println "[CHECKOUT] Checking out User Build ${USER_DEFAULTS_JSON['repository']['build_url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: USER_DEFAULTS_JSON["repository"]["build_branch"] ] ],
+            branches: [ [ name: ${branch} ] ],
             userRemoteConfigs: [ [ url: USER_DEFAULTS_JSON["repository"]["build_url"] ] ]
         ])
     }
