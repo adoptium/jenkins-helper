@@ -94,11 +94,11 @@ class RepoHandler {
     Changes dir to adopt's ci-jenkins-pipelines repo
     */
     public void checkoutAdoptPipelines (def context) {
-        def branch = this.pipeline_branch_override ?: ${ADOPT_DEFAULTS_JSON['repository']['pipeline_branch']}
+        def branch = this.pipeline_branch_override ?: "${ADOPT_DEFAULTS_JSON['repository']['pipeline_branch']}"
    
         context.println "[CHECKOUT] Checking out Adopt Pipelines ${ADOPT_DEFAULTS_JSON['repository']['pipeline_url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: ${branch} ] ],
+            branches: [ [ name: "${branch}" ] ],
             userRemoteConfigs: [ [ url: ADOPT_DEFAULTS_JSON["repository"]["pipeline_url"] ] ]
         ])
     }
@@ -107,11 +107,11 @@ class RepoHandler {
     Changes dir to the user's ci-jenkins-pipelines repo
     */
     public void checkoutUserPipelines (def context) {
-        def branch = this.pipeline_branch_override ?: ${configs['branch']}
+        def branch = this.pipeline_branch_override ?: "${configs['branch']}"
 
         context.println "[CHECKOUT] Checking out User Pipelines ${configs['remotes']['url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: ${branch} ] ],
+            branches: [ [ name: "${branch}" ] ],
             userRemoteConfigs: [ configs["remotes"] ]
         ])
     }
@@ -120,11 +120,11 @@ class RepoHandler {
     Changes dir to adopt's temurin-build repo
     */
     public void checkoutAdoptBuild (def context) {
-        def branch = this.build_branch_override ?: ${ADOPT_DEFAULTS_JSON['repository']['build_branch']}
+        def branch = this.build_branch_override ?: "${ADOPT_DEFAULTS_JSON['repository']['build_branch']}"
 
         context.println "[CHECKOUT] Checking out Adopt Build ${ADOPT_DEFAULTS_JSON['repository']['build_url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: ${branch} ] ],
+            branches: [ [ name: "${branch}" ] ],
             userRemoteConfigs: [ [ url: ADOPT_DEFAULTS_JSON["repository"]["build_url"] ] ]
         ])
     }
@@ -133,11 +133,11 @@ class RepoHandler {
     Changes dir to user's temurin-build repo
     */
     public void checkoutUserBuild (def context) {
-        def branch = this.build_branch_override ?: ${USER_DEFAULTS_JSON['repository']['build_branch']}
+        def branch = this.build_branch_override ?: "${USER_DEFAULTS_JSON['repository']['build_branch']}"
 
         context.println "[CHECKOUT] Checking out User Build ${USER_DEFAULTS_JSON['repository']['build_url']} : ${branch}"
         context.checkout([$class: 'GitSCM',
-            branches: [ [ name: ${branch} ] ],
+            branches: [ [ name: "${branch}" ] ],
             userRemoteConfigs: [ [ url: USER_DEFAULTS_JSON["repository"]["build_url"] ] ]
         ])
     }
