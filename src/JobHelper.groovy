@@ -160,7 +160,7 @@ class JobHelper {
     * @return
     */
     public static getNodesFromLabel(def label, def context) {
-        return queryJsonApi("https://ci.adoptopenjdk.net/label/$label/api/json?pretty=true", 5, context)
+        return queryJsonApi("https://ci.adoptium.net/label/$label/api/json?pretty=true", 5, context)
     }
 
     /**
@@ -170,7 +170,7 @@ class JobHelper {
     * @return
     */
     public static getNodeInfomation(def nodeName, def context) {
-        return queryJsonApi("https://ci.adoptopenjdk.net/computer/$nodeName/api/json?pretty=true", 5, context)
+        return queryJsonApi("https://ci.adoptium.net/computer/$nodeName/api/json?pretty=true", 5, context)
     }
 
     /**
@@ -183,7 +183,7 @@ class JobHelper {
     */
     public static getConsoleLog(String version, String jobName, String jobNumber, def context) {
         return queryBasicApi(
-            "https://ci.adoptopenjdk.net/job/build-scripts/job/jobs/job/$version/job/$jobName/$jobNumber/consoleText",
+            "https://ci.adoptium.net/job/build-scripts/job/jobs/job/$version/job/$jobName/$jobNumber/consoleText",
             5,
             context
         )
