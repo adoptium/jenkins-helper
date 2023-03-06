@@ -49,6 +49,7 @@ class IndividualBuildConfig implements Serializable {
     final String ADDITIONAL_FILE_NAME_TAG
     final String JDK_BOOT_VERSION
     final boolean RELEASE
+    final boolean WEEKLY
     final String PUBLISH_NAME
     final String ADOPT_BUILD_NUMBER
     final boolean ENABLE_TESTS
@@ -121,6 +122,7 @@ class IndividualBuildConfig implements Serializable {
         ADDITIONAL_FILE_NAME_TAG = map.get("ADDITIONAL_FILE_NAME_TAG") != null ? map.get("ADDITIONAL_FILE_NAME_TAG").trim() : null
         JDK_BOOT_VERSION = map.get("JDK_BOOT_VERSION") != null ? map.get("JDK_BOOT_VERSION").trim() : null
         RELEASE = map.get("RELEASE")
+        WEEKLY = map.get("WEEKLY")
         PUBLISH_NAME = map.get("PUBLISH_NAME") != null ? map.get("PUBLISH_NAME").trim() : null
         ADOPT_BUILD_NUMBER = map.get("ADOPT_BUILD_NUMBER") != null ? map.get("ADOPT_BUILD_NUMBER").trim() : null
         ENABLE_TESTS = map.get("ENABLE_TESTS")
@@ -181,6 +183,7 @@ class IndividualBuildConfig implements Serializable {
                 ADDITIONAL_FILE_NAME_TAG  : ADDITIONAL_FILE_NAME_TAG,
                 JDK_BOOT_VERSION          : JDK_BOOT_VERSION,
                 RELEASE                   : RELEASE,
+                WEEKLY                    : WEEKLY,
                 PUBLISH_NAME              : PUBLISH_NAME,
                 ADOPT_BUILD_NUMBER        : ADOPT_BUILD_NUMBER,
                 ENABLE_TESTS              : ENABLE_TESTS,
