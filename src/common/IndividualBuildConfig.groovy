@@ -51,6 +51,7 @@ class IndividualBuildConfig implements Serializable {
     final boolean RELEASE
     final String PUBLISH_NAME
     final String ADOPT_BUILD_NUMBER
+    final boolean ENABLE_REPRODUCIBLE_COMPARE
     final boolean ENABLE_TESTS
     final boolean ENABLE_TESTDYNAMICPARALLEL
     final boolean ENABLE_INSTALLERS
@@ -123,6 +124,7 @@ class IndividualBuildConfig implements Serializable {
         RELEASE = map.get("RELEASE")
         PUBLISH_NAME = map.get("PUBLISH_NAME") != null ? map.get("PUBLISH_NAME").trim() : null
         ADOPT_BUILD_NUMBER = map.get("ADOPT_BUILD_NUMBER") != null ? map.get("ADOPT_BUILD_NUMBER").trim() : null
+        ENABLE_REPRODUCIBLE_COMPARE = map.get("ENABLE_REPRODUCIBLE_COMPARE") != null ? map.get("ENABLE_REPRODUCIBLE_COMPARE") : null
         ENABLE_TESTS = map.get("ENABLE_TESTS")
         ENABLE_TESTDYNAMICPARALLEL = map.get("ENABLE_TESTDYNAMICPARALLEL")
         ENABLE_INSTALLERS = map.get("ENABLE_INSTALLERS")
@@ -183,6 +185,7 @@ class IndividualBuildConfig implements Serializable {
                 RELEASE                   : RELEASE,
                 PUBLISH_NAME              : PUBLISH_NAME,
                 ADOPT_BUILD_NUMBER        : ADOPT_BUILD_NUMBER,
+                ENABLE_REPRODUCIBLE_COMPARE : ENABLE_REPRODUCIBLE_COMPARE,
                 ENABLE_TESTS              : ENABLE_TESTS,
                 ENABLE_TESTDYNAMICPARALLEL: ENABLE_TESTDYNAMICPARALLEL,
                 ENABLE_INSTALLERS         : ENABLE_INSTALLERS,
