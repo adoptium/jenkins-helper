@@ -29,7 +29,7 @@ node {
                 println "Machine: '${machines[index]}' already exists."
             } else {
                 if (Integer.parseInt(machineIPs[index].split("\\.")[0]) == 10) {
-                    launcher = new CommandLauncher(Constants.SSH_COMMAND + "${machineIPs[index]} " + "\"wget -q --no-check-certificate -O slave.jar ${JENKINS_URL}jnlpJars/slave.jar ; java -jar slave.jar\"");
+                    launcher = new CommandLauncher(Constants.SSH_COMMAND + "${machineIPs[index]} " + "\"wget -q -O slave.jar ${JENKINS_URL}jnlpJars/slave.jar ; java -jar slave.jar\"");
                     remoteFS = Constants.REMOTE_FS;
                 } else if (machines[index].contains("win")) {
                     launcher = new JNLPLauncher("", "", new jenkins.slaves.RemotingWorkDirSettings(false, "", "remoting", false));
