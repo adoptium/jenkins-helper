@@ -9,5 +9,6 @@ on:
 
 jobs:
   codefreeze:
+    permissions: read-all
     uses: adoptium/.github/.github/workflows/code-freeze.yml@main
     secrets: inherit
