@@ -150,7 +150,7 @@ class JobHelper {
     * @return
     */
     public static getAvailableReleases(def context) {
-        return queryJsonApi("https://api.adoptopenjdk.net/v3/info/available_releases", 5, context)
+        return queryJsonApi("https://api.adoptium.net/v3/info/available_releases", 5, context)
     }
 
     /**
