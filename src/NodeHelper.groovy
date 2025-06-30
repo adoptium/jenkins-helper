@@ -94,6 +94,51 @@ class  NodeHelper {
     } 
 
     /**
+     * Overwrites the existing mode with the one passed in.
+     * modes could be either normal or exclusive
+     *
+     * @param computerName the computer whose labels need to be updated
+     * @param mode         the net mode for the computer
+     *
+     * @return Done if mode changed and setMode:SLAVE_NOT_FOUND if no node found
+     */
+    public String setMode(String computerName, String mode) {
+        String ret = "setMode:SLAVE_NOT_FOUND";
+
+        def slave = Jenkins.getInstance().getSlave(computerName)
+        if (slave != null) {
+            if(mode == 'NORMAL') {
+                slave.setMode(hudson.model.Node.Mode.NORMAL);
+            } else {
+                slave.setMode(hudson.model.Node.Mode.EXCLUSIVE);
+            }
+            slave.save()
+            return 'Done'
+        }
+
+        return ret;
+    }
+
+
+    /**
+     * Returns mode of the node.
+     *
+     * @param computerName the computer whose labels need to be updated
+     *
+     * @return either NORMAL or EXCLUSIVE
+     */
+    public String getMode(String computerName) {
+        String ret = "setMode:SLAVE_NOT_FOUND";
+
+        def slave = Jenkins.getInstance().getSlave(computerName)
+        if (slave != null) {
+            return slave.getMode() == hudson.model.Node.Mode.NORMAL ? "NORMAL" : "EXCLUSIVE"
+        }
+
+        return ret;
+    }
+
+    /**
      * Overwrites the existing labels with the ones passed
      * in. Labels should be seperated by spaces.
      *
@@ -108,6 +153,7 @@ class  NodeHelper {
         Computer computer = getComputer(computerName);
         if (computer != null) {
             computer.getNode().setLabelString(label.toLowerCase());
+            computer.getNode().save()
             ret = getLabels(computer.getName());
         }
 
