@@ -218,7 +218,7 @@ class VersionInfo {
                 try {
                     build = or0(matched223, 'build')
                 } catch(IllegalArgumentException e) {
-                    // Ignore as 'build' is not in the given regex
+                    build = 0
                 }
 
                 if (matched223.group('opt') != null) {
