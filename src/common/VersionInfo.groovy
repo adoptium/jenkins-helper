@@ -218,6 +218,7 @@ class VersionInfo {
                 try {
                     build = or0(matched223, 'build')
                 } catch(IllegalArgumentException e) {
+                    // Default 'build' to 0 as it is not in the given regex
                     build = 0
                 }
 
