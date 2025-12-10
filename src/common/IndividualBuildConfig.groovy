@@ -33,6 +33,7 @@ class IndividualBuildConfig implements Serializable {
     final String BUILD_ARGS
     final String NODE_LABEL
     final String ADDITIONAL_TEST_LABEL
+    final Map    ADDITIONAL_TEST_PARAMS
     final boolean KEEP_TEST_REPORTDIR
     final String ACTIVE_NODE_TIMEOUT
     final boolean CODEBUILD
@@ -107,6 +108,9 @@ class IndividualBuildConfig implements Serializable {
         BUILD_ARGS = map.get("BUILD_ARGS") != null ? map.get("BUILD_ARGS").trim() : null
         NODE_LABEL = map.get("NODE_LABEL") != null ? map.get("NODE_LABEL").trim() : null
         ADDITIONAL_TEST_LABEL = map.get("ADDITIONAL_TEST_LABEL") != null ? map.get("ADDITIONAL_TEST_LABEL").trim() : null
+
+        ADDITIONAL_TEST_PARAMS = map.get("ADDITIONAL_TEST_PARAMS") != null ? map.get("ADDITIONAL_TEST_PARAMS") : null
+
         KEEP_TEST_REPORTDIR = map.get("KEEP_TEST_REPORTDIR")
         ACTIVE_NODE_TIMEOUT = map.get("ACTIVE_NODE_TIMEOUT") != null ? map.get("ACTIVE_NODE_TIMEOUT").trim() : null
         CODEBUILD = map.get("CODEBUILD")
@@ -169,6 +173,7 @@ class IndividualBuildConfig implements Serializable {
                 BUILD_ARGS                : BUILD_ARGS,
                 NODE_LABEL                : NODE_LABEL,
                 ADDITIONAL_TEST_LABEL     : ADDITIONAL_TEST_LABEL,
+                ADDITIONAL_TEST_PARAMS    : ADDITIONAL_TEST_PARAMS,
                 KEEP_TEST_REPORTDIR       : KEEP_TEST_REPORTDIR,
                 ACTIVE_NODE_TIMEOUT       : ACTIVE_NODE_TIMEOUT,
                 CODEBUILD                 : CODEBUILD,
