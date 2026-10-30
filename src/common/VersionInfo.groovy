@@ -21,6 +21,7 @@ class VersionInfo {
     Integer minor // 0
     Integer security // 181
     Integer patch
+    List<Integer> additional_version_numbers // version number fields 5, 6 and 7, e.g. [2] for jdk-27.0.1.0.2+1
     Integer build // 8
     String opt
     String version
@@ -28,6 +29,8 @@ class VersionInfo {
     Integer adopt_build_number
     String semver
     String msi_product_version
+
+    private static final long MSI_MAX_REVISION = 65535L
 
     private final context
 
@@ -62,6 +65,7 @@ class VersionInfo {
             minor: ${minor},
             security: ${security},
             patch: ${patch},
+            additional_version_numbers: ${additional_version_numbers},
             pre: ${pre},
             adopt_build_number: ${adopt_build_number},
             major: ${major},
@@ -168,8 +172,9 @@ class VersionInfo {
     // Match JDK9+
     private boolean match223(versionString) {
         // jdk9+ version string format:
-        //   jdk-<major>[.<minor>][.<security>][.<patch>][-<pre>]+<build>[-<opt>]
+        //   jdk-<major>[.<minor>][.<security>][.<patch>][.<additional1>][.<additional2>][.<additional3>][-<pre>]+<build>[-<opt>]
         // eg.
+        // jdk-27.0.1.0.2+1
         // jdk-15+36
         // jdk-11.0.9+11
         // jdk-11.0.9.1+1
@@ -179,8 +184,10 @@ class VersionInfo {
         //
         //Regexes based on those in http://openjdk.java.net/jeps/223
         // Note, currently openjdk only uses the first regex format of 223
-        // Technically the standard supports an arbitrary number of numbers, we will support 4 for now
-        final vnumRegex = "(?<major>[0-9]+)(\\.(?<minor>[0-9]+))?(\\.(?<security>[0-9]+))?(\\.(?<patch>[0-9]+))?"
+        // Technically the standard supports an arbitrary number of numbers, we will support 7 for now
+        // (major, minor, security, patch and up to 3 additional version numbers)
+        final vnumRegex = "(?<major>[0-9]+)(\\.(?<minor>[0-9]+))?(\\.(?<security>[0-9]+))?(\\.(?<patch>[0-9]+))?" +
+                "(\\.(?<additional1>[0-9]+))?(\\.(?<additional2>[0-9]+))?(\\.(?<additional3>[0-9]+))?"
         final preRegex = "(?<pre>[a-zA-Z0-9]+)"
         final buildRegex = "(?<build>[0-9]+)"
         final optRegex = "(?<opt>[-a-zA-Z0-9\\.]+)"
@@ -204,6 +211,16 @@ class VersionInfo {
                 if (matched223.group('patch') != null) {
                    patch = matched223.group('patch') as Integer
                     context.println "[SUCCESS] regex group (patch) of 223 regex matched to ${patch}"
+                }
+
+                ['additional1', 'additional2', 'additional3'].each { groupName ->
+                    if (matched223.group(groupName) != null) {
+                        if (additional_version_numbers == null) {
+                            additional_version_numbers = []
+                        }
+                        additional_version_numbers << (matched223.group(groupName) as Integer)
+                        context.println "[SUCCESS] regex group (${groupName}) of 223 regex matched to ${additional_version_numbers.last()}"
+                    }
                 }
 
                 try {
@@ -248,14 +265,21 @@ class VersionInfo {
 
             semver += "+"
             
-            def sem_build = (build ?: 0)
+            long sem_build = (build ?: 0)
 
-            // if "patch" then increment semver build by patch x 100
-            // semver only supports major.minor.security, so to support openjdk patch branches
-            // we have to ensure the semver build is incremented by 100 (greater than expected number of builds per version)
-            // to ensure semver version ordering
+            // semver only supports major.minor.security, so to support openjdk patch branches and the
+            // additional version numbers we encode them into the semver build number.
+            // Each field is given 2 digits (greater than expected number of builds / values per field),
+            // with the earlier version number fields being the more significant, to ensure semver version ordering:
+            //   build x 1, additional3 x 100, additional2 x 10,000, additional1 x 1,000,000, patch x 100,000,000
+            // Note: ordering between different security versions is handled by the semver security field itself.
             if (patch != null && patch > 0) {
-                sem_build += (patch * 100)
+                sem_build += (patch * 100000000L)
+            }
+
+            long[] additionalMultipliers = [1000000L, 10000L, 100L]
+            additional_version_numbers?.eachWithIndex { additional, index ->
+                sem_build += (additional * additionalMultipliers[index])
             }
 
             semver += sem_build
@@ -275,19 +299,39 @@ class VersionInfo {
 
     
     /**
-     * Form ProductVersion with only 4 number with dot , ie 11.0.9.0 or 11.0.9.101
+     * Form ProductVersion with only 4 number with dot , ie 11.0.9.0 or 11.0.9.10001
      */
     String formMSIProductVersion() {
         if (major != null) {
             def productVersion = major + "." + minor + "." + security
 
-            def msi_revision = (build ?: 0)
+            long msi_revision = (build ?: 0)
 
-            // if "patch" then increment productVersion MSI revision by patch x 100
-            // To ensure Win MSI product version order when openjdk do a patch branch
-            // we have to ensure the productVersion MSI revision is incremented by 100 (greater than expected number of builds per version)
+            // The MSI revision field has a maximum of 65535, so the openjdk patch branch version number and the
+            // additional version numbers are encoded into the revision with a single digit each.
+            // The earlier version number fields are the more significant, to ensure Win MSI product version order:
+            //   build x 1, additional2 x 100, additional1 x 1,000, patch x 10,000
+            // Supported ranges, to stay within 65535:
+            //   patch 0-6, additional1 and additional2 0-5 (when patch is 6), build 0-99
+            //   (build up to 35 when patch is 6 and both additional1 and additional2 are 5: 65535 = 6.5.5.35)
+            // The 3rd additional version number (7th number) can not be represented and is not included.
             if (patch != null && patch > 0) {
-                msi_revision += (patch * 100)
+                msi_revision += (patch * 10000L)
+            }
+
+            if (additional_version_numbers != null) {
+                if (additional_version_numbers.size() > 0) {
+                    msi_revision += (additional_version_numbers[0] * 1000L)
+                }
+                if (additional_version_numbers.size() > 1) {
+                    msi_revision += (additional_version_numbers[1] * 100L)
+                }
+            }
+
+            // Anything above the maximum is not a valid MSI revision, so cap it
+            if (msi_revision > MSI_MAX_REVISION) {
+                context.println "[WARNING] MSI revision ${msi_revision} exceeds ${MSI_MAX_REVISION}, setting it to ${MSI_MAX_REVISION}"
+                msi_revision = MSI_MAX_REVISION
             }
 
             productVersion += "." + msi_revision
@@ -300,7 +344,10 @@ class VersionInfo {
 
     /**
      * Form semver without build, build number or timestamp.
-     * This is the format dirs inside an archive will look like, i.e 8.0.212
+     * This is the format dirs inside an archive used to look like, i.e 8.0.212
+     *
+     * Note: this is not currently used, the directory inside an archive is now the "jdk tag name",
+     * i.e jdk-27.0.1.0.2+1, so this does not reflect the archive directory name.
      * @return
      */
     String formOpenjdkSemver() {
